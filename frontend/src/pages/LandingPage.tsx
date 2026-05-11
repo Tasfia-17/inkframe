@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BotanicalLeft, BotanicalRight, GardenDivider, CornerSprig } from '../components/Botanicals'
+import { BotanicalLeft, BotanicalRight, GardenDivider, CornerSprig, PetalRain } from '../components/Botanicals'
 
 const PIPELINE = [
   { label: "Show Don't Tell rewrite", desc: 'Emotion words become visual actions a camera can capture' },
@@ -18,6 +18,7 @@ const APIS = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-vellum font-sans overflow-x-hidden">
+      <PetalRain />
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-vellum/95 backdrop-blur border-b border-border px-6 py-3 flex items-center justify-between">
@@ -30,10 +31,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative max-w-6xl mx-auto px-4 pt-16 pb-24 flex items-center justify-center min-h-[88vh]">
-        <div className="absolute left-0 bottom-0 w-56 h-[520px] pointer-events-none select-none hidden lg:block">
+        <div className="absolute left-0 bottom-0 w-64 h-[560px] pointer-events-none select-none hidden lg:block">
           <BotanicalLeft />
         </div>
-        <div className="absolute right-0 bottom-0 w-56 h-[520px] pointer-events-none select-none hidden lg:block">
+        <div className="absolute right-0 bottom-0 w-64 h-[560px] pointer-events-none select-none hidden lg:block">
           <BotanicalRight />
         </div>
 
