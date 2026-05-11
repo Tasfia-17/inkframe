@@ -4,7 +4,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from database import SessionLocal, Project, Scene
 from task_store import update_task, complete_task, fail_task, is_task_cancelled
-from services.story_parser import parse_story
+from services.story_parser import parse_story, show_dont_tell, extract_continuity
 from services.runway_client import generate_frame, upload_frame, animate_frame, generate_character_ref
 from services.audio_service import generate_narration, generate_sfx
 from services.polish_service import polish_clip
@@ -38,7 +38,17 @@ async def _run(project_id: int, task_id: str):
         if is_task_cancelled(task_id): return
 
         try:
-            scenes_data = parse_story(project.story_text)
+            # Show-don't-tell rewrite → better visual prompts
+            update_task(task_id, "parsing_story", 0, 3, "Rewriting for visual storytelling...")
+            visual_story = show_dont_tell(project.story_text)
+
+            # Extract continuity (characters, palette, style)
+            update_task(task_id, "parsing_story", 1, 3, "Extracting continuity...")
+            continuity = extract_continuity(visual_story)
+
+            # Parse into scenes with continuity context
+            update_task(task_id, "parsing_story", 2, 3, "Breaking into scenes...")
+            scenes_data = parse_story(visual_story, continuity=continuity)
         except Exception as e:
             fail_task(task_id, project_id, f"Story parsing failed: {e}")
             return

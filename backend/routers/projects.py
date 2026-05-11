@@ -159,6 +159,17 @@ async def upload_char_ref(project_id: int, file: UploadFile = File(...),
     return {"char_ref_path": str(path), "char_ref_runway_uri": runway_uri}
 
 
+class AnalyzeStoryBody(BaseModel):
+    story_text: str = Field(..., min_length=10, max_length=10000)
+
+
+@router.post("/analyze-story")
+def analyze_story_endpoint(body: AnalyzeStoryBody, user=Depends(get_current_user)):
+    """Pre-generation story quality check — returns scores, emotional arc, and a tip."""
+    from services.story_parser import analyze_story
+    return analyze_story(body.story_text)
+
+
 @router.post("/{project_id}/generate")
 def start_generation(project_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db), user=Depends(get_current_user)):
     project = _get_owned(project_id, user.id, db)
