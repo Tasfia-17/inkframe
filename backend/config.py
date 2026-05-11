@@ -25,14 +25,15 @@ ENABLE_SUBTITLES = os.getenv("ENABLE_SUBTITLES", "true").lower() == "true"
 # Generation concurrency
 GEN_CONCURRENCY = int(os.getenv("GEN_CONCURRENCY", "5"))      # raised from 3 → 5 for faster parallel gen
 
-# Storage
-UPLOADS_DIR = BASE_DIR / "uploads"
-OUTPUTS_DIR = BASE_DIR / "outputs"
+# Storage — use DATA_DIR env var for persistent volume on Railway/cloud
+_data_dir = Path(os.getenv("DATA_DIR", str(BASE_DIR)))
+UPLOADS_DIR = _data_dir / "uploads"
+OUTPUTS_DIR = _data_dir / "outputs"
 for d in [UPLOADS_DIR, OUTPUTS_DIR]:
-    d.mkdir(exist_ok=True)
+    d.mkdir(parents=True, exist_ok=True)
 
-# Database
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'app.db'}")
+# Database — use DATA_DIR for SQLite persistence on Railway volume
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{_data_dir / 'app.db'}")
 DB_CONNECT_ARGS = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 # Auth
