@@ -14,130 +14,178 @@ const APIS = [
   'eleven_multilingual_sts_v2', 'gen4_aleph', 'eleven_voice_dubbing',
 ]
 
-// ── Botanical SVG illustrations ───────────────────────────────────────────────
+// ── Organic botanical SVGs ────────────────────────────────────────────────────
 
-function FlowerLeft() {
+// A single daisy-like flower with organic petals
+function Daisy({ cx = 0, cy = 0, r = 22, rotate = 0, opacity = 1 }: { cx?: number; cy?: number; r?: number; rotate?: number; opacity?: number }) {
+  const petals = [
+    "M0,-1 C3,-8 8,-14 0,-18 C-8,-14 -3,-8 0,-1",
+    "M1,-1 C8,-5 14,-8 12,-16 C5,-12 3,-6 1,-1",
+    "M1,0 C8,3 14,6 16,0 C12,-6 6,-4 1,0",
+    "M1,1 C8,5 12,12 6,16 C0,12 0,6 1,1",
+    "M0,1 C3,8 2,15 -4,16 C-8,10 -4,5 0,1",
+    "M-1,1 C-8,5 -14,8 -14,2 C-10,-4 -5,-1 -1,1",
+    "M-1,0 C-8,-3 -14,-6 -12,-14 C-5,-10 -3,-4 -1,0",
+    "M-1,-1 C-8,-5 -10,-12 -4,-16 C0,-12 0,-5 -1,-1",
+  ]
   return (
-    <svg viewBox="0 0 220 420" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      {/* Main stem */}
-      <path d="M110 420 C108 360 105 300 112 240 C118 180 108 120 115 60" stroke="#50B33A" strokeWidth="2.5" strokeLinecap="round"/>
-      {/* Left branch */}
-      <path d="M112 280 C90 265 65 255 40 248" stroke="#50B33A" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Right branch */}
-      <path d="M114 220 C138 205 162 198 188 194" stroke="#50B33A" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Left leaf */}
-      <path d="M112 280 C95 268 72 258 40 248 C58 242 82 245 112 280Z" fill="#50B33A" opacity="0.25"/>
-      <path d="M112 280 C95 268 72 258 40 248 C58 242 82 245 112 280Z" stroke="#50B33A" strokeWidth="1.2"/>
-      {/* Right leaf */}
-      <path d="M114 220 C132 208 158 200 188 194 C172 188 148 192 114 220Z" fill="#50B33A" opacity="0.25"/>
-      <path d="M114 220 C132 208 158 200 188 194 C172 188 148 192 114 220Z" stroke="#50B33A" strokeWidth="1.2"/>
-      {/* Small left leaf */}
-      <path d="M111 340 C92 330 70 328 50 330 C65 322 88 325 111 340Z" fill="#50B33A" opacity="0.18"/>
-      <path d="M111 340 C92 330 70 328 50 330 C65 322 88 325 111 340Z" stroke="#50B33A" strokeWidth="1"/>
-      {/* Big flower head */}
-      <circle cx="115" cy="60" r="28" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1.5"/>
-      {/* Petals */}
-      {[0,45,90,135,180,225,270,315].map((angle, i) => (
-        <ellipse key={i}
-          cx={115 + Math.cos((angle * Math.PI) / 180) * 26}
-          cy={60 + Math.sin((angle * Math.PI) / 180) * 26}
-          rx="10" ry="6"
-          transform={`rotate(${angle} ${115 + Math.cos((angle * Math.PI) / 180) * 26} ${60 + Math.sin((angle * Math.PI) / 180) * 26})`}
-          fill="#50B33A" opacity="0.35" stroke="#50B33A" strokeWidth="0.8"
-        />
+    <g transform={`translate(${cx},${cy}) rotate(${rotate}) scale(${r / 18})`} opacity={opacity}>
+      {petals.map((d, i) => (
+        <path key={i} d={d} fill="#50B33A" opacity="0.55" stroke="#50B33A" strokeWidth="0.4"/>
       ))}
-      <circle cx="115" cy="60" r="12" fill="#50B33A" opacity="0.7"/>
-      <circle cx="115" cy="60" r="6" fill="#f7f4ed"/>
-      {/* Small bud on right branch */}
-      <circle cx="188" cy="194" r="8" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1.2"/>
-      {[0,60,120,180,240,300].map((angle, i) => (
-        <ellipse key={i}
-          cx={188 + Math.cos((angle * Math.PI) / 180) * 9}
-          cy={194 + Math.sin((angle * Math.PI) / 180) * 9}
-          rx="5" ry="3.5"
-          transform={`rotate(${angle} ${188 + Math.cos((angle * Math.PI) / 180) * 9} ${194 + Math.sin((angle * Math.PI) / 180) * 9})`}
-          fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.6"
-        />
-      ))}
-      <circle cx="188" cy="194" r="5" fill="#50B33A" opacity="0.5"/>
+      <circle r="5" fill="#50B33A" opacity="0.9"/>
+      <circle r="2.5" fill="#f7f4ed"/>
+    </g>
+  )
+}
+
+// A rose-like flower with layered petals
+function Rose({ cx = 0, cy = 0, r = 20, rotate = 0, opacity = 1 }: { cx?: number; cy?: number; r?: number; rotate?: number; opacity?: number }) {
+  return (
+    <g transform={`translate(${cx},${cy}) rotate(${rotate})`} opacity={opacity}>
+      {/* Outer petals */}
+      <path d={`M0,0 C${r*0.3},-${r*0.8} ${r*0.9},-${r*0.9} ${r*0.7},-${r*0.2} C${r*0.5},${r*0.1} ${r*0.2},${r*0.05} 0,0`} fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.5"/>
+      <path d={`M0,0 C${r*0.8},-${r*0.3} ${r},-${r*0.1} ${r*0.6},${r*0.5} C${r*0.3},${r*0.7} ${r*0.1},${r*0.3} 0,0`} fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.5"/>
+      <path d={`M0,0 C${r*0.3},${r*0.8} ${r*0.1},${r} -${r*0.4},${r*0.7} C-${r*0.6},${r*0.4} -${r*0.2},${r*0.2} 0,0`} fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.5"/>
+      <path d={`M0,0 C-${r*0.8},${r*0.3} -${r},${r*0.1} -${r*0.7},-${r*0.5} C-${r*0.4},-${r*0.7} -${r*0.1},-${r*0.3} 0,0`} fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.5"/>
+      <path d={`M0,0 C-${r*0.3},-${r*0.8} -${r*0.1},-${r} ${r*0.4},-${r*0.7} C${r*0.6},-${r*0.4} ${r*0.2},-${r*0.2} 0,0`} fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.5"/>
+      {/* Inner petals */}
+      <path d={`M0,0 C${r*0.2},-${r*0.5} ${r*0.6},-${r*0.5} ${r*0.4},0 C${r*0.2},${r*0.2} ${r*0.05},${r*0.1} 0,0`} fill="#50B33A" opacity="0.55"/>
+      <path d={`M0,0 C${r*0.5},${r*0.2} ${r*0.5},${r*0.6} 0,${r*0.4} C-${r*0.2},${r*0.2} -${r*0.1},${r*0.05} 0,0`} fill="#50B33A" opacity="0.55"/>
+      <path d={`M0,0 C-${r*0.2},${r*0.5} -${r*0.6},${r*0.5} -${r*0.4},0 C-${r*0.2},-${r*0.2} -${r*0.05},-${r*0.1} 0,0`} fill="#50B33A" opacity="0.55"/>
+      <path d={`M0,0 C-${r*0.5},-${r*0.2} -${r*0.5},-${r*0.6} 0,-${r*0.4} C${r*0.2},-${r*0.2} ${r*0.1},-${r*0.05} 0,0`} fill="#50B33A" opacity="0.55"/>
+      <circle r={r * 0.18} fill="#50B33A" opacity="0.9"/>
+    </g>
+  )
+}
+
+// Organic leaf shape
+function Leaf({ x1 = 0, y1 = 0, x2 = 0, y2 = 0, flip = false, opacity = 0.35 }: { x1?: number; y1?: number; x2?: number; y2?: number; flip?: boolean; opacity?: number }) {
+  const mx = (x1 + x2) / 2
+  const my = (y1 + y2) / 2
+  const dx = x2 - x1, dy = y2 - y1
+  const len = Math.sqrt(dx * dx + dy * dy)
+  const nx = -dy / len * 18 * (flip ? -1 : 1)
+  const ny = dx / len * 18 * (flip ? -1 : 1)
+  return (
+    <path
+      d={`M${x1},${y1} C${mx + nx * 0.3},${my + ny * 0.3} ${mx + nx},${my + ny} ${x2},${y2} C${mx + nx * 0.7},${my + ny * 0.5} ${mx},${my} ${x1},${y1}`}
+      fill="#50B33A" opacity={opacity} stroke="#50B33A" strokeWidth="0.8"
+    />
+  )
+}
+
+// Full botanical stem with flowers
+function BotanicalLeft() {
+  return (
+    <svg viewBox="0 0 200 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Main stem — organic curve */}
+      <path d="M100 500 C98 450 94 400 100 350 C106 300 98 250 104 200 C110 150 102 100 108 50" stroke="#50B33A" strokeWidth="2" strokeLinecap="round"/>
+      {/* Branch left */}
+      <path d="M101 320 C85 308 65 300 42 296" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Branch right */}
+      <path d="M103 230 C120 218 140 212 162 210" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Branch left low */}
+      <path d="M100 400 C82 392 62 390 44 392" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
+
+      {/* Leaves */}
+      <Leaf x1={101} y1={320} x2={42} y2={296} flip={false} opacity={0.3}/>
+      <Leaf x1={103} y1={230} x2={162} y2={210} flip={true} opacity={0.3}/>
+      <Leaf x1={100} y1={400} x2={44} y2={392} flip={true} opacity={0.25}/>
+
+      {/* Small leaves on main stem */}
+      <path d="M102 270 C88 262 78 255 72 248 C82 248 94 256 102 270Z" fill="#50B33A" opacity="0.22" stroke="#50B33A" strokeWidth="0.7"/>
+      <path d="M104 180 C118 172 128 165 134 158 C124 158 112 166 104 180Z" fill="#50B33A" opacity="0.22" stroke="#50B33A" strokeWidth="0.7"/>
+
+      {/* Main flower top */}
+      <Daisy cx={108} cy={50} r={26} rotate={15} opacity={1}/>
+
+      {/* Flower on right branch */}
+      <Daisy cx={162} cy={210} r={18} rotate={-20} opacity={0.9}/>
+
+      {/* Bud on left branch */}
+      <Rose cx={42} cy={296} r={12} rotate={10} opacity={0.85}/>
+
+      {/* Tiny bud low */}
+      <g transform="translate(44,392)">
+        <path d="M0,0 C-4,-8 -2,-14 0,-16 C2,-14 4,-8 0,0Z" fill="#50B33A" opacity="0.6" stroke="#50B33A" strokeWidth="0.8"/>
+        <path d="M0,0 C4,-6 8,-10 6,-14 C2,-10 0,-5 0,0Z" fill="#50B33A" opacity="0.45" stroke="#50B33A" strokeWidth="0.7"/>
+        <path d="M0,0 C-4,-6 -8,-10 -6,-14 C-2,-10 0,-5 0,0Z" fill="#50B33A" opacity="0.45" stroke="#50B33A" strokeWidth="0.7"/>
+      </g>
+
+      {/* Extra small daisy mid-stem */}
+      <Daisy cx={100} cy={150} r={14} rotate={5} opacity={0.75}/>
     </svg>
   )
 }
 
-function FlowerRight() {
+function BotanicalRight() {
   return (
-    <svg viewBox="0 0 220 420" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+    <svg viewBox="0 0 200 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       {/* Main stem */}
-      <path d="M110 420 C112 360 115 300 108 240 C102 180 112 120 105 60" stroke="#50B33A" strokeWidth="2.5" strokeLinecap="round"/>
-      {/* Right branch */}
-      <path d="M108 280 C130 265 155 255 180 248" stroke="#50B33A" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Left branch */}
-      <path d="M106 220 C82 205 58 198 32 194" stroke="#50B33A" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Right leaf */}
-      <path d="M108 280 C125 268 148 258 180 248 C162 242 138 245 108 280Z" fill="#50B33A" opacity="0.25"/>
-      <path d="M108 280 C125 268 148 258 180 248 C162 242 138 245 108 280Z" stroke="#50B33A" strokeWidth="1.2"/>
-      {/* Left leaf */}
-      <path d="M106 220 C88 208 62 200 32 194 C48 188 72 192 106 220Z" fill="#50B33A" opacity="0.25"/>
-      <path d="M106 220 C88 208 62 200 32 194 C48 188 72 192 106 220Z" stroke="#50B33A" strokeWidth="1.2"/>
-      {/* Small right leaf */}
-      <path d="M109 340 C128 330 150 328 170 330 C155 322 132 325 109 340Z" fill="#50B33A" opacity="0.18"/>
-      <path d="M109 340 C128 330 150 328 170 330 C155 322 132 325 109 340Z" stroke="#50B33A" strokeWidth="1"/>
-      {/* Big flower — slightly different, more open */}
-      <circle cx="105" cy="60" r="30" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1.5"/>
-      {[22,67,112,157,202,247,292,337].map((angle, i) => (
-        <ellipse key={i}
-          cx={105 + Math.cos((angle * Math.PI) / 180) * 28}
-          cy={60 + Math.sin((angle * Math.PI) / 180) * 28}
-          rx="11" ry="6.5"
-          transform={`rotate(${angle} ${105 + Math.cos((angle * Math.PI) / 180) * 28} ${60 + Math.sin((angle * Math.PI) / 180) * 28})`}
-          fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.8"
-        />
-      ))}
-      <circle cx="105" cy="60" r="13" fill="#50B33A" opacity="0.65"/>
-      <circle cx="105" cy="60" r="6" fill="#f7f4ed"/>
-      {/* Small bud on left branch */}
-      <circle cx="32" cy="194" r="7" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1.2"/>
-      {[0,60,120,180,240,300].map((angle, i) => (
-        <ellipse key={i}
-          cx={32 + Math.cos((angle * Math.PI) / 180) * 8}
-          cy={194 + Math.sin((angle * Math.PI) / 180) * 8}
-          rx="4.5" ry="3"
-          transform={`rotate(${angle} ${32 + Math.cos((angle * Math.PI) / 180) * 8} ${194 + Math.sin((angle * Math.PI) / 180) * 8})`}
-          fill="#50B33A" opacity="0.28" stroke="#50B33A" strokeWidth="0.6"
-        />
-      ))}
-      <circle cx="32" cy="194" r="4.5" fill="#50B33A" opacity="0.5"/>
+      <path d="M100 500 C102 450 106 400 100 350 C94 300 102 250 96 200 C90 150 98 100 92 50" stroke="#50B33A" strokeWidth="2" strokeLinecap="round"/>
+      {/* Branch right */}
+      <path d="M99 320 C115 308 135 300 158 296" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Branch left */}
+      <path d="M97 230 C80 218 60 212 38 210" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Branch right low */}
+      <path d="M100 400 C118 392 138 390 156 392" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
+
+      {/* Leaves */}
+      <Leaf x1={99} y1={320} x2={158} y2={296} flip={true} opacity={0.3}/>
+      <Leaf x1={97} y1={230} x2={38} y2={210} flip={false} opacity={0.3}/>
+      <Leaf x1={100} y1={400} x2={156} y2={392} flip={false} opacity={0.25}/>
+
+      {/* Small leaves */}
+      <path d="M98 270 C112 262 122 255 128 248 C118 248 106 256 98 270Z" fill="#50B33A" opacity="0.22" stroke="#50B33A" strokeWidth="0.7"/>
+      <path d="M96 180 C82 172 72 165 66 158 C76 158 88 166 96 180Z" fill="#50B33A" opacity="0.22" stroke="#50B33A" strokeWidth="0.7"/>
+
+      {/* Main flower top — rose style */}
+      <Rose cx={92} cy={50} r={26} rotate={-10} opacity={1}/>
+
+      {/* Flower on left branch */}
+      <Daisy cx={38} cy={210} r={18} rotate={20} opacity={0.9}/>
+
+      {/* Bud on right branch */}
+      <Rose cx={158} cy={296} r={12} rotate={-10} opacity={0.85}/>
+
+      {/* Tiny bud low */}
+      <g transform="translate(156,392)">
+        <path d="M0,0 C-4,-8 -2,-14 0,-16 C2,-14 4,-8 0,0Z" fill="#50B33A" opacity="0.6" stroke="#50B33A" strokeWidth="0.8"/>
+        <path d="M0,0 C4,-6 8,-10 6,-14 C2,-10 0,-5 0,0Z" fill="#50B33A" opacity="0.45" stroke="#50B33A" strokeWidth="0.7"/>
+        <path d="M0,0 C-4,-6 -8,-10 -6,-14 C-2,-10 0,-5 0,0Z" fill="#50B33A" opacity="0.45" stroke="#50B33A" strokeWidth="0.7"/>
+      </g>
+
+      {/* Extra small rose mid-stem */}
+      <Rose cx={100} cy={150} r={14} rotate={-5} opacity={0.75}/>
     </svg>
   )
 }
 
 function GardenDivider() {
   return (
-    <svg viewBox="0 0 800 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-      {/* Horizontal vine */}
-      <path d="M0 30 C100 28 200 32 300 30 C400 28 500 32 600 30 C700 28 750 30 800 30"
-        stroke="#50B33A" strokeWidth="1.2" strokeDasharray="4 6" opacity="0.4"/>
-      {/* Small leaves along vine */}
-      {[80, 200, 320, 440, 560, 680].map((x, i) => (
-        <g key={i}>
-          <ellipse cx={x} cy={i % 2 === 0 ? 22 : 38} rx="10" ry="5"
-            transform={`rotate(${i % 2 === 0 ? -30 : 30} ${x} ${i % 2 === 0 ? 22 : 38})`}
-            fill="#50B33A" opacity="0.25" stroke="#50B33A" strokeWidth="0.8"/>
+    <svg viewBox="0 0 800 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+      {/* Vine */}
+      <path d="M0 35 C80 30 160 40 240 35 C320 30 400 40 480 35 C560 30 640 40 720 35 C760 32 780 34 800 35"
+        stroke="#50B33A" strokeWidth="1" strokeDasharray="5 7" opacity="0.35"/>
+      {/* Leaves */}
+      {[60,180,300,420,540,660].map((x, i) => (
+        <g key={i} transform={`translate(${x},35)`}>
+          <path
+            d={i % 2 === 0
+              ? "M0,0 C-4,-6 -10,-10 -14,-8 C-10,-2 -5,2 0,0Z"
+              : "M0,0 C4,6 10,10 14,8 C10,2 5,-2 0,0Z"}
+            fill="#50B33A" opacity="0.3" stroke="#50B33A" strokeWidth="0.7"
+          />
         </g>
       ))}
-      {/* Small flowers */}
-      {[140, 400, 660].map((x, i) => (
+      {/* Flowers along vine */}
+      {[120, 280, 400, 520, 680].map((x, i) => (
         <g key={i}>
-          <circle cx={x} cy="30" r="5" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1"/>
-          {[0,72,144,216,288].map((angle, j) => (
-            <ellipse key={j}
-              cx={x + Math.cos((angle * Math.PI) / 180) * 7}
-              cy={30 + Math.sin((angle * Math.PI) / 180) * 7}
-              rx="3.5" ry="2"
-              transform={`rotate(${angle} ${x + Math.cos((angle * Math.PI) / 180) * 7} ${30 + Math.sin((angle * Math.PI) / 180) * 7})`}
-              fill="#50B33A" opacity="0.35"/>
-          ))}
-          <circle cx={x} cy="30" r="3" fill="#50B33A" opacity="0.6"/>
+          {i % 2 === 0
+            ? <Daisy cx={x} cy={35} r={10} rotate={i * 18} opacity={0.7}/>
+            : <Rose cx={x} cy={35} r={9} rotate={i * 22} opacity={0.65}/>
+          }
         </g>
       ))}
     </svg>
@@ -146,23 +194,25 @@ function GardenDivider() {
 
 function CornerSprig({ flip = false }: { flip?: boolean }) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg"
-      className={`w-24 h-24 opacity-40 ${flip ? 'scale-x-[-1]' : ''}`}>
-      <path d="M10 110 C20 85 35 65 55 50 C70 38 90 28 110 20" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M30 90 C22 75 18 58 20 42" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
-      <path d="M30 90 C22 75 18 58 20 42 C28 55 32 72 30 90Z" fill="#50B33A" opacity="0.2"/>
-      <path d="M60 62 C72 55 82 42 88 28" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
-      <path d="M60 62 C72 55 82 42 88 28 C80 38 70 52 60 62Z" fill="#50B33A" opacity="0.2"/>
-      <circle cx="110" cy="20" r="6" fill="#f7f4ed" stroke="#50B33A" strokeWidth="1"/>
-      {[0,72,144,216,288].map((angle, i) => (
-        <ellipse key={i}
-          cx={110 + Math.cos((angle * Math.PI) / 180) * 8}
-          cy={20 + Math.sin((angle * Math.PI) / 180) * 8}
-          rx="4" ry="2.5"
-          transform={`rotate(${angle} ${110 + Math.cos((angle * Math.PI) / 180) * 8} ${20 + Math.sin((angle * Math.PI) / 180) * 8})`}
-          fill="#50B33A" opacity="0.4"/>
-      ))}
-      <circle cx="110" cy="20" r="3.5" fill="#50B33A" opacity="0.6"/>
+    <svg viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg"
+      className={`w-28 h-28 opacity-50 ${flip ? 'scale-x-[-1]' : ''}`}>
+      <path d="M10 120 C25 95 45 72 68 55 C88 40 108 28 122 18" stroke="#50B33A" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Side branch */}
+      <path d="M38 88 C28 72 24 54 28 38" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
+      <Leaf x1={38} y1={88} x2={28} y2={38} flip={false} opacity={0.28}/>
+      {/* Another branch */}
+      <path d="M72 52 C82 38 88 22 86 10" stroke="#50B33A" strokeWidth="1.2" strokeLinecap="round"/>
+      <Leaf x1={72} y1={52} x2={86} y2={10} flip={true} opacity={0.28}/>
+      {/* Flower at tip */}
+      <Daisy cx={122} cy={18} r={14} rotate={30} opacity={0.85}/>
+      {/* Small bud on branch */}
+      <g transform="translate(28,38)">
+        <path d="M0,0 C-3,-6 -1,-10 0,-12 C1,-10 3,-6 0,0Z" fill="#50B33A" opacity="0.55" stroke="#50B33A" strokeWidth="0.7"/>
+        <path d="M0,0 C3,-4 6,-7 5,-10 C2,-7 0,-4 0,0Z" fill="#50B33A" opacity="0.4"/>
+        <path d="M0,0 C-3,-4 -6,-7 -5,-10 C-2,-7 0,-4 0,0Z" fill="#50B33A" opacity="0.4"/>
+      </g>
+      {/* Rose at second branch tip */}
+      <Rose cx={86} cy={10} r={11} rotate={-15} opacity={0.8}/>
     </svg>
   )
 }
@@ -182,28 +232,27 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero — full-width with flanking flowers */}
-      <section className="relative max-w-6xl mx-auto px-4 pt-16 pb-24 flex items-center justify-center min-h-[85vh]">
-        {/* Left flower */}
-        <div className="absolute left-0 bottom-0 w-48 h-96 pointer-events-none select-none hidden lg:block">
-          <FlowerLeft />
+      {/* Hero */}
+      <section className="relative max-w-6xl mx-auto px-4 pt-16 pb-24 flex items-center justify-center min-h-[88vh]">
+        {/* Left botanical */}
+        <div className="absolute left-0 bottom-0 w-52 h-[480px] pointer-events-none select-none hidden lg:block">
+          <BotanicalLeft />
         </div>
-        {/* Right flower */}
-        <div className="absolute right-0 bottom-0 w-48 h-96 pointer-events-none select-none hidden lg:block">
-          <FlowerRight />
+        {/* Right botanical */}
+        <div className="absolute right-0 bottom-0 w-52 h-[480px] pointer-events-none select-none hidden lg:block">
+          <BotanicalRight />
         </div>
 
-        {/* Center content */}
         <div className="text-center max-w-2xl relative z-10">
-          {/* Corner sprigs on mobile */}
-          <div className="flex justify-between mb-4 lg:hidden">
+          {/* Mobile sprigs */}
+          <div className="flex justify-between mb-2 lg:hidden px-2">
             <CornerSprig />
             <CornerSprig flip />
           </div>
 
           <h1 className="font-serif text-6xl md:text-8xl text-charcoal leading-[1.0] tracking-tight mb-6">
             Your story,<br />
-            <em className="not-italic text-inkwell" style={{ fontStyle: 'italic' }}>on screen.</em>
+            <span className="italic">on screen.</span>
           </h1>
 
           <p className="text-lg text-mutedgray max-w-lg mx-auto leading-relaxed mb-10">
@@ -222,21 +271,17 @@ export default function LandingPage() {
       </section>
 
       {/* Garden divider */}
-      <div className="max-w-4xl mx-auto px-6">
-        <GardenDivider />
-      </div>
+      <div className="max-w-4xl mx-auto px-6"><GardenDivider /></div>
 
       {/* How it works */}
       <section className="max-w-4xl mx-auto px-6 py-20 relative">
-        <div className="absolute top-8 right-0 hidden md:block"><CornerSprig flip /></div>
+        <div className="absolute top-6 right-0 hidden md:block"><CornerSprig flip /></div>
         <h2 className="font-serif text-4xl text-charcoal mb-2">How it works</h2>
         <p className="text-mutedgray mb-12">Five stages. Zero manual steps.</p>
         <div className="space-y-0">
           {PIPELINE.map((step, i) => (
             <div key={i} className="flex items-start gap-6 py-6 border-b border-border last:border-0">
-              <div className="w-8 h-8 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
-                {i + 1}
-              </div>
+              <div className="w-8 h-8 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">{i + 1}</div>
               <div className="flex-1">
                 <p className="font-medium text-charcoal text-sm mb-0.5">{step.label}</p>
                 <p className="text-sm text-mutedgray">{step.desc}</p>
@@ -248,13 +293,11 @@ export default function LandingPage() {
       </section>
 
       {/* Garden divider */}
-      <div className="max-w-4xl mx-auto px-6">
-        <GardenDivider />
-      </div>
+      <div className="max-w-4xl mx-auto px-6"><GardenDivider /></div>
 
       {/* API grid */}
       <section className="max-w-4xl mx-auto px-6 py-20 relative">
-        <div className="absolute top-8 left-0 hidden md:block"><CornerSprig /></div>
+        <div className="absolute top-6 left-0 hidden md:block"><CornerSprig /></div>
         <h2 className="font-serif text-4xl text-charcoal mb-2">10 Runway APIs</h2>
         <p className="text-mutedgray mb-10">Not a single call — a full agentic pipeline.</p>
         <div className="flex flex-wrap gap-2">
@@ -267,9 +310,7 @@ export default function LandingPage() {
       </section>
 
       {/* Garden divider */}
-      <div className="max-w-4xl mx-auto px-6">
-        <GardenDivider />
-      </div>
+      <div className="max-w-4xl mx-auto px-6"><GardenDivider /></div>
 
       {/* Features */}
       <section className="max-w-4xl mx-auto px-6 py-20">
@@ -292,16 +333,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA with flowers */}
+      {/* CTA */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <div className="bg-charcoal rounded-3xl px-8 py-16 text-center relative overflow-hidden">
-          {/* Decorative flower silhouettes inside dark card */}
-          <div className="absolute left-4 bottom-0 w-32 h-48 opacity-10 pointer-events-none">
-            <FlowerLeft />
-          </div>
-          <div className="absolute right-4 bottom-0 w-32 h-48 opacity-10 pointer-events-none">
-            <FlowerRight />
-          </div>
+          <div className="absolute left-4 bottom-0 w-36 h-52 opacity-[0.07] pointer-events-none"><BotanicalLeft /></div>
+          <div className="absolute right-4 bottom-0 w-36 h-52 opacity-[0.07] pointer-events-none"><BotanicalRight /></div>
           <div className="relative z-10">
             <h2 className="font-serif text-4xl text-white mb-4">Ready to make your film?</h2>
             <p className="text-[#9e9a91] mb-8 max-w-md mx-auto">Paste a story. Get a short film. No production team required.</p>
