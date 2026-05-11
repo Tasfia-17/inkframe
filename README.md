@@ -3,14 +3,14 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/Tasfia-17/inkframe/main/logo.png" alt="Inkframe Logo" width="200"/>
 
-  **An agentic media pipeline that chains 9 Runway APIs to transform any story into a complete short film — narrated, scored, subtitled, and ready to publish.**
+  **An agentic media pipeline that chains 10 Runway APIs to transform any story into a complete short film — narrated, scored, subtitled, and ready to publish.**
 
   Built for the Runway API Hackathon (May 8–11, 2026)
 
   ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
   ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi&logoColor=white)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=0f172a)
-  ![Runway](https://img.shields.io/badge/Runway-9%20APIs-000000?style=flat)
+  ![Runway](https://img.shields.io/badge/Runway-10%20APIs-000000?style=flat)
 </div>
 
 ---
@@ -27,7 +27,7 @@ Time:   60–90 seconds for a 4-scene film
 
 ---
 
-## The Pipeline — 9 Runway APIs, 8 Stages
+## The Pipeline — 10 Runway APIs, 8 Stages
 
 Not a single API call. A full agentic pipeline where each stage feeds the next.
 
@@ -86,15 +86,17 @@ Story Text
 
 | # | API | Model | Purpose |
 |---|-----|-------|---------|
-| 1 | `text_to_image` | `gen4_image_turbo` | Storyboard frames — 10× faster, supports @Tag references |
-| 2 | `image_to_video` | `gen4_turbo`, `gen4.5`, `veo3.1`, `veo3.1_fast`, `gen3a_turbo` | Animate frames → clips |
-| 3 | `image_to_video` | `gen4.5` (text-only mode) | Direct text-to-video, skips frame stage |
-| 4 | `text_to_speech` | `eleven_multilingual_v2` | Per-scene narration voiceover |
-| 5 | `sound_effect` | `eleven_text_to_sound_v2` | Ambient SFX per scene |
-| 6 | `voice_isolation` | `eleven_voice_isolation` | Clean narration audio |
-| 7 | `speech_to_speech` | `eleven_multilingual_sts_v2` | Voice style conversion |
-| 8 | `video_to_video` | `gen4_aleph` | Cinematic polish pass |
-| 9 | `voice_dubbing` | `eleven_voice_dubbing` | 29-language export |
+| 1 | `text_to_image` | `gen4_image_turbo` | Storyboard frames — supports @Tag references |
+| 2 | `text_to_image` | `gemini_2.5_flash` | Faster frames when no references needed |
+| 3 | `image_to_video` | `gen4_turbo`, `gen4.5`, `veo3.1`, `veo3.1_fast`, `seedance2` | Animate frames → clips |
+| 4 | `text_to_video` | `gen4.5` | Direct text-to-video, skips frame stage |
+| 5 | `text_to_speech` | `eleven_multilingual_v2` | Per-scene narration voiceover |
+| 6 | `sound_effect` | `eleven_text_to_sound_v2` | Ambient SFX per scene |
+| 7 | `voice_isolation` | `eleven_voice_isolation` | Clean narration audio |
+| 8 | `speech_to_speech` | `eleven_multilingual_sts_v2` | Voice style conversion |
+| 9 | `video_to_video` | `gen4_aleph` | Cinematic polish pass |
+| 10 | `voice_dubbing` | `eleven_voice_dubbing` | 29-language export |
+| + | `realtime_sessions` | `gwm1_avatars` | AI Director live video call |
 | + | `organization.retrieve` | — | Live credit tracking |
 
 ---
