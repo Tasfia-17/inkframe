@@ -30,6 +30,7 @@ async def _run(project_id: int, task_id: str):
         enable_subtitles = project.enable_subtitles
         enable_polish = project.enable_polish
         polish_prompt = project.polish_prompt or "cinematic film grain, enhance colors, dramatic lighting"
+        narrator_voice = project.narrator_voice or "Rachel"
         style_ref_uri = project.style_ref_runway_uri
         char_ref_uri = project.char_ref_runway_uri
 
@@ -85,30 +86,33 @@ async def _run(project_id: int, task_id: str):
                     pass  # non-fatal
 
         # ── Stage 3: Generate storyboard frames ──────────────────────────
-        update_task(task_id, "generating_frames", 0, total, "Generating storyboard frames...")
-        if is_task_cancelled(task_id): return
-
-        scenes = db.query(Scene).filter(Scene.project_id == project_id).order_by(Scene.index).all()
-        done = 0
-
-        async def gen_frame(scene: Scene):
-            nonlocal done
+        # For gen4.5: skip frame generation (supports pure text-to-video)
+        skip_frames = video_model == "gen4.5" and not style_ref_uri and not char_ref_uri
+        if not skip_frames:
+            update_task(task_id, "generating_frames", 0, total, "Generating storyboard frames...")
             if is_task_cancelled(task_id): return
-            try:
-                _db_update(scene.id, {"status": "generating_frame"}, db)
-                frame_path = await generate_frame(
-                    scene.visual_prompt, project_id, scene.index,
-                    style_ref_uri=style_ref_uri,
-                    char_ref_uri=char_ref_uri,
-                )
-                runway_uri = await upload_frame(frame_path)
-                _db_update(scene.id, {"frame_path": str(frame_path), "frame_runway_uri": runway_uri, "status": "frame_done"}, db)
-            except Exception as e:
-                _db_update(scene.id, {"status": "error", "error": str(e)}, db)
-            done += 1
-            update_task(task_id, "generating_frames", done, total)
 
-        await asyncio.gather(*[gen_frame(s) for s in scenes])
+            scenes = db.query(Scene).filter(Scene.project_id == project_id).order_by(Scene.index).all()
+            done = 0
+
+            async def gen_frame(scene: Scene):
+                nonlocal done
+                if is_task_cancelled(task_id): return
+                try:
+                    _db_update(scene.id, {"status": "generating_frame"}, db)
+                    frame_path = await generate_frame(
+                        scene.visual_prompt, project_id, scene.index,
+                        style_ref_uri=style_ref_uri,
+                        char_ref_uri=char_ref_uri,
+                    )
+                    runway_uri = await upload_frame(frame_path)
+                    _db_update(scene.id, {"frame_path": str(frame_path), "frame_runway_uri": runway_uri, "status": "frame_done"}, db)
+                except Exception as e:
+                    _db_update(scene.id, {"status": "error", "error": str(e)}, db)
+                done += 1
+                update_task(task_id, "generating_frames", done, total)
+
+            await asyncio.gather(*[gen_frame(s) for s in scenes])
         if is_task_cancelled(task_id): return
 
         # ── Stage 4: Animate frames → clips ──────────────────────────────
@@ -119,13 +123,18 @@ async def _run(project_id: int, task_id: str):
 
         async def animate(scene: Scene):
             nonlocal done
-            if is_task_cancelled(task_id) or not scene.frame_runway_uri: return
+            if is_task_cancelled(task_id): return
+            # gen4.5 text-to-video: no frame URI needed
+            if not scene.frame_runway_uri and not skip_frames: return
             try:
                 _db_update(scene.id, {"status": "generating_clip"}, db)
                 clip_path, clip_url = await animate_frame(
-                    scene.frame_runway_uri, scene.motion_prompt,
-                    project_id, scene.index, video_model=video_model,
+                    scene.frame_runway_uri,  # None for gen4.5 text-to-video
+                    scene.motion_prompt,
+                    project_id, scene.index,
+                    video_model=video_model,
                     video_ratio=video_ratio,
+                    visual_prompt=scene.visual_prompt if skip_frames else None,
                 )
                 _db_update(scene.id, {"clip_path": str(clip_path), "clip_url": clip_url, "status": "clip_done"}, db)
             except Exception as e:
@@ -151,7 +160,7 @@ async def _run(project_id: int, task_id: str):
                 if is_task_cancelled(task_id): return
                 try:
                     if enable_narration and scene.narration_text:
-                        narr_path = await generate_narration(scene.narration_text, project_id, scene.index)
+                        narr_path = await generate_narration(scene.narration_text, project_id, scene.index, voice_preset=narrator_voice)
                         narration_paths[scene.index] = narr_path
                         _db_update(scene.id, {"narration_path": str(narr_path)}, db)
                     if enable_sfx and scene.sfx_prompt:

@@ -68,6 +68,7 @@ export default function HomePage() {
   const [enableSubtitles, setEnableSubtitles] = useState(true)
   const [enablePolish, setEnablePolish] = useState(false)
   const [polishPrompt, setPolishPrompt] = useState('cinematic film grain, enhance colors, dramatic lighting')
+  const [narratorVoice, setNarratorVoice] = useState('Rachel')
 
   useEffect(() => {
     api.get('/api/projects').then(({ data }) => setProjects(data))
@@ -99,6 +100,7 @@ export default function HomePage() {
         enable_narration: enableNarration, enable_sfx: enableSfx,
         enable_subtitles: enableSubtitles, enable_polish: enablePolish,
         polish_prompt: enablePolish ? polishPrompt : null,
+        narrator_voice: narratorVoice,
       })
       navigate(`/project/${data.id}`)
     } catch (err) {
@@ -298,6 +300,28 @@ export default function HomePage() {
               </div>
 
               {/* Audio & features */}
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Narrator Voice</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'Rachel',  label: 'Rachel',  desc: 'Warm · Female' },
+                    { id: 'Adam',    label: 'Adam',    desc: 'Deep · Male' },
+                    { id: 'Bella',   label: 'Bella',   desc: 'Soft · Female' },
+                    { id: 'Antoni',  label: 'Antoni',  desc: 'Crisp · Male' },
+                    { id: 'Elli',    label: 'Elli',    desc: 'Young · Female' },
+                    { id: 'Josh',    label: 'Josh',    desc: 'Casual · Male' },
+                  ].map(v => (
+                    <button key={v.id} type="button"
+                      onClick={() => setNarratorVoice(v.id)}
+                      className={`p-2 rounded-lg border text-left transition-colors ${narratorVoice === v.id ? 'border-blue-500 bg-blue-900/30' : 'border-gray-700 hover:border-gray-600 bg-[#1a1a2e]'}`}>
+                      <div className="text-xs font-medium text-white">{v.label}</div>
+                      <div className="text-xs text-gray-500">{v.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Features */}
               <div>
                 <label className="text-xs text-gray-500 uppercase tracking-wider block mb-2">Features</label>
                 <div className="bg-[#1a1a2e] border border-gray-700 rounded-lg divide-y divide-gray-800">

@@ -53,6 +53,7 @@ class Project(Base):
     enable_subtitles = Column(Boolean, default=True)         # subtitles
     enable_polish = Column(Boolean, default=False)           # feature 7
     polish_prompt = Column(String, nullable=True)            # feature 7
+    narrator_voice = Column(String, default="Rachel")        # TTS voice preset
     storyboard_pdf_path = Column(String, nullable=True)      # storyboard export
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

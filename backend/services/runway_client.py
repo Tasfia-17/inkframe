@@ -98,27 +98,35 @@ async def upload_frame(frame_path: Path) -> str:
 
 
 async def animate_frame(
-    runway_uri: str,
+    runway_uri: str | None,
     motion_prompt: str,
     project_id: int,
     scene_index: int,
     video_model: str = "gen4_turbo",
     video_ratio: str = "1280:720",
+    visual_prompt: str | None = None,
 ) -> tuple[Path, str]:
-    """Image → video clip via Runway. Returns (local_path, runway_output_url)."""
+    """Image → video (or text → video for gen4.5). Returns (local_path, runway_output_url).
+    
+    gen4.5 supports pure text-to-video — skips image requirement when no runway_uri provided.
+    veo3.1/veo3.1_fast: native audio generation enabled.
+    """
     async with _semaphore:
         client = await get_runway_client()
+        # Combine visual + motion prompts for richer text-to-video
+        combined_prompt = f"{visual_prompt}. {motion_prompt}" if visual_prompt else motion_prompt
+
         kwargs = dict(
             model=video_model,
-            prompt_text=motion_prompt,
+            prompt_text=combined_prompt,
             ratio=video_ratio,
             duration=VIDEO_DURATION,
         )
-        if video_model not in ["gen4.5", "veo3", "veo3.1", "veo3.1_fast"]:
+
+        # gen4.5 can do pure text-to-video — only attach image if we have one
+        if runway_uri:
             kwargs["prompt_image"] = runway_uri
-        else:
-            kwargs["prompt_image"] = runway_uri
-        
+
         if video_model in ["veo3.1", "veo3.1_fast"]:
             kwargs["audio"] = True
 

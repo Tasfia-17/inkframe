@@ -42,6 +42,7 @@ class CreateProjectBody(BaseModel):
     enable_subtitles: bool = True
     enable_polish: bool = False
     polish_prompt: Optional[str] = Field(None, max_length=500)
+    narrator_voice: str = "Rachel"
 
 
 class UpdateSceneBody(BaseModel):
@@ -66,6 +67,7 @@ def create_project(body: CreateProjectBody, db: Session = Depends(get_db), user=
         enable_subtitles=body.enable_subtitles,
         enable_polish=body.enable_polish,
         polish_prompt=body.polish_prompt,
+        narrator_voice=body.narrator_voice,
     )
     db.add(project)
     db.commit()
@@ -251,6 +253,7 @@ def _project_dict(p: Project) -> dict:
         "enable_subtitles": p.enable_subtitles,
         "enable_polish": p.enable_polish,
         "polish_prompt": p.polish_prompt,
+        "narrator_voice": p.narrator_voice,
         "style_ref_path": p.style_ref_path,
         "char_ref_path": p.char_ref_path,
         "storyboard_pdf_path": p.storyboard_pdf_path,
