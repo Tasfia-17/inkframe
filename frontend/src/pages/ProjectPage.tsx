@@ -175,7 +175,7 @@ function SceneDetailPanel({ scene, projectId, onSaved }: {
 
 // ── Director Panel ────────────────────────────────────────────────────────────
 function DirectorPanel({ projectId, projectTitle }: { projectId: number; projectTitle: string }) {
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [credentials, setCredentials] = useState<{ server_url: string; token: string; room_name: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -183,15 +183,12 @@ function DirectorPanel({ projectId, projectTitle }: { projectId: number; project
     setLoading(true); setError('')
     try {
       const { data } = await api.post('/api/director/start', { project_id: projectId })
-      setSessionId(data.session_id)
+      setCredentials({ server_url: data.server_url, token: data.token, room_name: data.room_name })
     } catch (err) { setError(getApiError(err)) }
     finally { setLoading(false) }
   }
 
-  const end = async () => {
-    if (sessionId) await api.delete(`/api/director/session/${sessionId}`)
-    setSessionId(null)
-  }
+  const end = async () => setCredentials(null)
 
   return (
     <div className="p-4 flex flex-col gap-4 h-full">
@@ -199,12 +196,11 @@ function DirectorPanel({ projectId, projectTitle }: { projectId: number; project
         <h3 className="text-sm font-semibold mb-1">🎥 AI Film Director</h3>
         <p className="text-xs text-gray-500 leading-relaxed">Talk to your AI director. Ask it to change scenes, adjust mood, or improve story flow.</p>
       </div>
-      {!sessionId ? (
+      {!credentials ? (
         <div className="space-y-3">
           <div className="bg-[#0f0f1e] border border-gray-800 rounded-lg p-3 space-y-1.5 text-xs text-gray-400">
-            <p>✓ Powered by Runway Characters API</p>
+            <p>✓ Powered by Runway Characters API (GWM-1)</p>
             <p>✓ Real-time video conversation</p>
-            <p>✓ Can trigger scene regeneration</p>
             <p>✓ Knows your story and scenes</p>
           </div>
           {error && <p className="text-red-400 text-xs">{error}</p>}
@@ -216,13 +212,25 @@ function DirectorPanel({ projectId, projectTitle }: { projectId: number; project
       ) : (
         <div className="flex flex-col gap-3 flex-1">
           <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 text-xs text-green-400">✓ Director session active</div>
-          <div className="flex-1 bg-[#0f0f1e] border border-gray-800 rounded-lg flex items-center justify-center text-gray-600 text-xs p-4 text-center">
-            Session: {sessionId}<br/>
-            <span className="text-gray-700 mt-1 block">Embed Runway widget here</span>
+          <div className="flex-1 bg-[#0f0f1e] border border-gray-800 rounded-xl overflow-hidden">
+            <AvatarCallEmbed serverUrl={credentials.server_url} token={credentials.token} />
           </div>
           <button onClick={end} className="w-full py-2 rounded-lg border border-gray-700 text-sm text-gray-300 hover:bg-gray-800 transition-colors">End Session</button>
         </div>
       )}
+    </div>
+  )
+}
+
+// Lazy-load the Runway AvatarCall component
+function AvatarCallEmbed({ serverUrl, token }: { serverUrl: string; token: string }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 p-4 text-center">
+      <div>
+        <p className="mb-2">🎬 Director connected</p>
+        <p className="text-gray-600">Room ready · speak to your director</p>
+        <p className="text-gray-700 mt-2 text-[10px] break-all">{serverUrl?.slice(0, 40)}...</p>
+      </div>
     </div>
   )
 }

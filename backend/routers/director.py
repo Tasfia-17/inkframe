@@ -52,48 +52,58 @@ async def start_director_session(body: StartDirectorBody, db=Depends(get_db), us
     if not project:
         raise HTTPException(404, "Project not found")
 
-    # List available avatars and pick the first one (or a specific director avatar)
+    # List available avatars and pick the first preset one
     try:
-        avatars = await _runway_get("/avatars")
-        avatar_id = avatars["data"][0]["id"] if avatars.get("data") else None
+        avatars_resp = await _runway_get("/avatars")
+        avatar_id = avatars_resp["data"][0]["id"] if avatars_resp.get("data") else "customer-service"
     except Exception:
-        avatar_id = None
+        avatar_id = "customer-service"
 
-    # Create realtime session with tool calling for scene regeneration
+    # Step 1: Create session with correct schema
     session_body = {
-        "systemPrompt": DIRECTOR_SYSTEM_PROMPT + f"\n\nProject: '{project.title}'\nStory: {project.story_text[:500]}",
-        "tools": [
-            {
-                "type": "server",
-                "name": "regenerate_scene",
-                "description": "Regenerate a specific scene with new prompts based on director feedback",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "scene_index": {"type": "integer", "description": "0-based scene index to regenerate"},
-                        "new_visual_prompt": {"type": "string", "description": "New visual prompt for the scene"},
-                        "new_motion_prompt": {"type": "string", "description": "New camera/motion prompt"},
-                        "reason": {"type": "string", "description": "Why this change improves the film"},
-                    },
-                    "required": ["scene_index", "reason"],
-                },
-                "url": f"{PUBLIC_URL}/api/director/tool/regenerate",
-            }
-        ],
+        "model": "gwm1_avatars",
+        "avatar": {"type": "custom", "avatarId": avatar_id},
+        "personality": DIRECTOR_SYSTEM_PROMPT + f"\n\nProject: '{project.title}'\nStory: {project.story_text[:500]}",
     }
-    if avatar_id:
-        session_body["avatarId"] = avatar_id
 
     try:
         session = await _runway_post("/realtime_sessions", session_body)
-        return {
-            "session_id": session.get("id"),
-            "session_token": session.get("sessionToken"),
-            "avatar_id": avatar_id,
-            "livekit_url": session.get("livekitUrl"),
-        }
+        session_id = session["id"]
     except Exception as e:
         raise HTTPException(500, f"Failed to create director session: {e}")
+
+    # Step 2: Poll until READY (up to 60s)
+    session_key = None
+    async with httpx.AsyncClient() as client:
+        for _ in range(60):
+            r = await client.get(f"{RUNWAY_API}/realtime_sessions/{session_id}", headers=HEADERS, timeout=10)
+            data = r.json()
+            if data.get("status") == "READY":
+                session_key = data.get("sessionKey")
+                break
+            if data.get("status") == "FAILED":
+                raise HTTPException(500, f"Session failed: {data.get('failure')}")
+            import asyncio
+            await asyncio.sleep(1)
+
+    if not session_key:
+        raise HTTPException(504, "Director session timed out")
+
+    # Step 3: Consume session to get LiveKit credentials
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            f"{RUNWAY_API}/realtime_sessions/{session_id}/consume",
+            headers={**HEADERS, "Authorization": f"Bearer {session_key}"},
+            timeout=15,
+        )
+        credentials = r.json()
+
+    return {
+        "session_id": session_id,
+        "server_url": credentials.get("url"),
+        "token": credentials.get("token"),
+        "room_name": credentials.get("roomName"),
+    }
 
 
 @router.delete("/session/{session_id}")
