@@ -18,12 +18,12 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o")
 # Runway model config
 IMAGE_MODEL = os.getenv("IMAGE_MODEL", "gen4_image_turbo")    # 10x faster than gen4_image
 VIDEO_MODEL = os.getenv("VIDEO_MODEL", "gen4_turbo")          # 5 credits/sec
-VIDEO_DURATION = int(os.getenv("VIDEO_DURATION", "5"))        # seconds per clip
+VIDEO_DURATION = int(os.getenv("VIDEO_DURATION", "4"))        # seconds per clip (4s = 20% faster, smooth concat)
 VIDEO_RATIO = os.getenv("VIDEO_RATIO", "1280:720")
 ENABLE_SUBTITLES = os.getenv("ENABLE_SUBTITLES", "true").lower() == "true"
 
 # Generation concurrency
-GEN_CONCURRENCY = int(os.getenv("GEN_CONCURRENCY", "3"))
+GEN_CONCURRENCY = int(os.getenv("GEN_CONCURRENCY", "5"))      # raised from 3 → 5 for faster parallel gen
 
 # Storage
 UPLOADS_DIR = BASE_DIR / "uploads"

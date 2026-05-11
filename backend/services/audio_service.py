@@ -87,7 +87,7 @@ async def convert_voice_style(
 
     task = await client.speech_to_speech.create(
         model="eleven_multilingual_sts_v2",
-        audio_uri=upload.uri,
+        media={"type": "audio", "uri": upload.uri},
         voice={"type": "runway-preset", "preset_id": target_voice_preset},
     )
     result = await task.wait_for_task_output()

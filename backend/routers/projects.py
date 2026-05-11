@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
-VIDEO_MODELS = ["gen4_turbo", "gen4.5", "veo3.1_fast", "veo3.1", "gen3a_turbo"]
+VIDEO_MODELS = ["gen4_turbo", "gen4.5", "seedance2", "veo3.1_fast", "veo3.1", "gen3a_turbo"]
 ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 ALLOWED_VIDEO_RATIOS = ["1280:720", "720:1280", "1080:1920", "1920:1080"]
 
@@ -73,6 +73,13 @@ def create_project(body: CreateProjectBody, db: Session = Depends(get_db), user=
     db.commit()
     db.refresh(project)
     return _project_dict(project)
+
+
+@router.get("/usage")
+async def get_usage(user=Depends(get_current_user)):
+    from services.runway_client import get_org_usage
+    usage = await get_org_usage()
+    return usage
 
 
 @router.get("")
@@ -226,13 +233,6 @@ async def dub_video(project_id: int, target_lang: str = Form(...), db: Session =
     dubbed_path = await dub_video_audio(Path(project.final_video_path), target_lang, project_id)
     from fastapi.responses import FileResponse
     return FileResponse(dubbed_path, media_type="video/mp4", filename=f"{project.title}_{target_lang}.mp4")
-
-
-@router.get("/usage")
-async def get_usage(user=Depends(get_current_user)):
-    from services.runway_client import get_org_usage
-    usage = await get_org_usage()
-    return usage
 
 
 def _get_owned(project_id: int, user_id: int, db: Session) -> Project:

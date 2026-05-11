@@ -69,14 +69,16 @@ async def generate_frame(
 
         client = await get_runway_client()
         kwargs = dict(
-            model=IMAGE_MODEL,
             ratio="1280:720",
             prompt_text=prompt,
         )
         if reference_images:
+            # gen4_image_turbo: cheapest (2cr) when references provided
+            kwargs["model"] = "gen4_image_turbo"
             kwargs["reference_images"] = reference_images
-        elif IMAGE_MODEL == "gen4_image_turbo":
-            kwargs["model"] = "gen4_image"
+        else:
+            # gemini_2.5_flash: faster + same cost (5cr) as gen4_image, no refs needed
+            kwargs["model"] = "gemini_2.5_flash"
 
         task = await client.text_to_image.create(**kwargs)
         result = await task.wait_for_task_output()
@@ -123,14 +125,16 @@ async def animate_frame(
             duration=VIDEO_DURATION,
         )
 
-        # gen4.5 can do pure text-to-video — only attach image if we have one
-        if runway_uri:
-            kwargs["prompt_image"] = runway_uri
-
         if video_model in ["veo3.1", "veo3.1_fast"]:
             kwargs["audio"] = True
 
-        task = await client.image_to_video.create(**kwargs)
+        # Use correct endpoint: text_to_video when no image, image_to_video when image provided
+        if runway_uri:
+            kwargs["prompt_image"] = runway_uri
+            task = await client.image_to_video.create(**kwargs)
+        else:
+            task = await client.text_to_video.create(**kwargs)
+
         result = await task.wait_for_task_output()
         video_url = result.output[0]
 

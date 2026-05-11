@@ -1,44 +1,22 @@
-"""Feature 8: Interactive Story Director via Runway Characters API.
-Creates a realtime session with a Runway avatar that acts as a film director.
-The avatar can trigger scene regeneration via tool calling.
-"""
+"""Feature 8: Interactive Story Director via Runway Characters API."""
+import asyncio
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from database import get_db, Project
 from auth import get_current_user
 from config import RUNWAYML_API_SECRET
-import os
-
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:8000")
+from runwayml import AsyncRunwayML
 
 router = APIRouter(prefix="/api/director", tags=["director"])
 
-RUNWAY_API = "https://api.dev.runwayml.com/v1"
-HEADERS = {
-    "Authorization": f"Bearer {RUNWAYML_API_SECRET}",
-    "X-Runway-Version": "2024-11-06",
-    "Content-Type": "application/json",
-}
+RUNWAY_BASE = "https://api.dev.runwayml.com/v1"
+RUNWAY_VERSION = "2024-11-06"
 
 DIRECTOR_SYSTEM_PROMPT = """You are Alex, an experienced film director helping a user create a short film from their story.
 You have access to the project's scenes and can regenerate specific scenes based on the user's feedback.
 Be creative, encouraging, and specific with your cinematic suggestions.
 When the user asks to change a scene, use the regenerate_scene tool."""
-
-
-async def _runway_post(path: str, body: dict) -> dict:
-    async with httpx.AsyncClient() as client:
-        r = await client.post(f"{RUNWAY_API}{path}", headers=HEADERS, json=body, timeout=30)
-        r.raise_for_status()
-        return r.json()
-
-
-async def _runway_get(path: str) -> dict:
-    async with httpx.AsyncClient() as client:
-        r = await client.get(f"{RUNWAY_API}{path}", headers=HEADERS, timeout=30)
-        r.raise_for_status()
-        return r.json()
 
 
 class StartDirectorBody(BaseModel):
@@ -52,51 +30,58 @@ async def start_director_session(body: StartDirectorBody, db=Depends(get_db), us
     if not project:
         raise HTTPException(404, "Project not found")
 
-    # List available avatars and pick the first preset one
-    try:
-        avatars_resp = await _runway_get("/avatars")
-        avatar_id = avatars_resp["data"][0]["id"] if avatars_resp.get("data") else "customer-service"
-    except Exception:
-        avatar_id = "customer-service"
+    async with AsyncRunwayML(api_key=RUNWAYML_API_SECRET) as client:
+        # Get first available avatar — must be a UUID from your Runway account
+        try:
+            avatars = await client.avatars.list(limit=10)
+            if not avatars.data:
+                raise HTTPException(400, "No avatars found. Create one at https://dev.runwayml.com → Characters tab.")
+            avatar_id = avatars.data[0].id
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(500, f"Failed to list avatars: {e}")
 
-    # Step 1: Create session with correct schema
-    session_body = {
-        "model": "gwm1_avatars",
-        "avatar": {"type": "custom", "avatarId": avatar_id},
-        "personality": DIRECTOR_SYSTEM_PROMPT + f"\n\nProject: '{project.title}'\nStory: {project.story_text[:500]}",
-    }
+        # Create session
+        try:
+            session = await client.realtime_sessions.create(
+                model="gwm1_avatars",
+                avatar={"type": "custom", "avatarId": avatar_id},
+                personality=DIRECTOR_SYSTEM_PROMPT + f"\n\nProject: '{project.title}'\nStory: {project.story_text[:500]}",
+            )
+            session_id = session.id
+        except Exception as e:
+            raise HTTPException(500, f"Failed to create director session: {e}")
 
-    try:
-        session = await _runway_post("/realtime_sessions", session_body)
-        session_id = session["id"]
-    except Exception as e:
-        raise HTTPException(500, f"Failed to create director session: {e}")
-
-    # Step 2: Poll until READY (up to 60s)
-    session_key = None
-    async with httpx.AsyncClient() as client:
+        # Poll until READY (up to 60s)
+        session_key = None
         for _ in range(60):
-            r = await client.get(f"{RUNWAY_API}/realtime_sessions/{session_id}", headers=HEADERS, timeout=10)
-            data = r.json()
-            if data.get("status") == "READY":
-                session_key = data.get("sessionKey")
+            s = await client.realtime_sessions.retrieve(session_id)
+            if s.status == "READY":
+                session_key = s.session_key
                 break
-            if data.get("status") == "FAILED":
-                raise HTTPException(500, f"Session failed: {data.get('failure')}")
-            import asyncio
+            if s.status == "FAILED":
+                raise HTTPException(500, f"Session failed: {s.failure}")
             await asyncio.sleep(1)
 
-    if not session_key:
-        raise HTTPException(504, "Director session timed out")
+        if not session_key:
+            raise HTTPException(504, "Director session timed out")
 
-    # Step 3: Consume session to get LiveKit credentials
-    async with httpx.AsyncClient() as client:
-        r = await client.post(
-            f"{RUNWAY_API}/realtime_sessions/{session_id}/consume",
-            headers={**HEADERS, "Authorization": f"Bearer {session_key}"},
-            timeout=15,
-        )
-        credentials = r.json()
+        # Consume credentials — POST with empty body, auth is sessionKey
+        async with httpx.AsyncClient() as http:
+            r = await http.post(
+                f"{client.base_url}v1/realtime_sessions/{session_id}/consume",
+                headers={
+                    "Authorization": f"Bearer {session_key}",
+                    "X-Runway-Version": RUNWAY_VERSION,
+                    "Content-Type": "application/json",
+                },
+                content=b"{}",
+                timeout=15,
+            )
+            if not r.is_success:
+                raise HTTPException(500, f"Consume failed ({r.status_code}): {r.text}")
+            credentials = r.json()
 
     return {
         "session_id": session_id,
@@ -110,11 +95,11 @@ async def start_director_session(body: StartDirectorBody, db=Depends(get_db), us
 async def end_director_session(session_id: str, user=Depends(get_current_user)):
     """End a director session."""
     try:
-        async with httpx.AsyncClient() as client:
-            r = await client.delete(f"{RUNWAY_API}/realtime_sessions/{session_id}", headers=HEADERS, timeout=15)
-        return {"ok": True}
+        async with AsyncRunwayML(api_key=RUNWAYML_API_SECRET) as client:
+            await client.realtime_sessions.delete(session_id)
     except Exception:
-        return {"ok": True}
+        pass
+    return {"ok": True}
 
 
 class ToolCallBody(BaseModel):

@@ -22,6 +22,7 @@ const STATUS_CONFIG: Record<string, { dot: string; label: string }> = {
 const VIDEO_MODELS = [
   { value: 'gen4_turbo',  label: 'Gen4 Turbo',  desc: '5 cr/s · Fast' },
   { value: 'gen4.5',      label: 'Gen4.5',       desc: '12 cr/s · Best' },
+  { value: 'seedance2',   label: 'Seedance 2',   desc: '36 cr/s · 15s max' },
   { value: 'veo3.1_fast', label: 'Veo3.1 Fast', desc: '10 cr/s · Google' },
   { value: 'veo3.1',      label: 'Veo3.1',       desc: '20 cr/s · Premium' },
   { value: 'gen3a_turbo', label: 'Gen3 Turbo',  desc: '3 cr/s · Budget' },

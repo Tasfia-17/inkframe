@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { AvatarCall } from '@runwayml/avatars-react'
+import '@runwayml/avatars-react/styles.css'
 import api, { getApiError } from '../utils/api'
 import { useSSEProgress } from '../hooks/useSSEProgress'
 
@@ -153,7 +155,7 @@ function SceneDetailPanel({ scene, projectId, onSaved }: {
 
 // ── Director Panel ────────────────────────────────────────────────────────────
 function DirectorPanel({ projectId }: { projectId: number }) {
-  const [credentials, setCredentials] = useState<{ server_url: string; token: string } | null>(null)
+  const [sessionData, setSessionData] = useState<{ session_id: string; server_url: string; token: string; room_name: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -161,9 +163,16 @@ function DirectorPanel({ projectId }: { projectId: number }) {
     setLoading(true); setError('')
     try {
       const { data } = await api.post('/api/director/start', { project_id: projectId })
-      setCredentials({ server_url: data.server_url, token: data.token })
+      setSessionData(data)
     } catch (err) { setError(getApiError(err)) }
     finally { setLoading(false) }
+  }
+
+  const end = async () => {
+    if (sessionData) {
+      await api.delete(`/api/director/session/${sessionData.session_id}`).catch(() => {})
+    }
+    setSessionData(null)
   }
 
   return (
@@ -172,7 +181,7 @@ function DirectorPanel({ projectId }: { projectId: number }) {
         <h3 className="font-serif text-lg text-charcoal mb-1">AI Director</h3>
         <p className="text-xs text-mutedgray leading-relaxed">Talk to your AI director. Ask it to change scenes, adjust mood, or improve story flow.</p>
       </div>
-      {!credentials ? (
+      {!sessionData ? (
         <div className="space-y-3">
           <div className="bg-vellum border border-border rounded-xl p-4 space-y-2 text-xs text-mutedgray">
             <p>✓ Powered by Runway Characters API (GWM-1)</p>
@@ -185,15 +194,16 @@ function DirectorPanel({ projectId }: { projectId: number }) {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3 flex-1">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-700">✓ Director session active</div>
-          <div className="flex-1 bg-vellum border border-border rounded-xl flex items-center justify-center text-xs text-mutedgray p-4 text-center">
-            <div>
-              <p className="mb-1 font-medium text-charcoal">🎬 Director connected</p>
-              <p className="text-[#c4bfb5]">{credentials.server_url?.slice(0, 40)}…</p>
-            </div>
+        <div className="flex flex-col gap-3 flex-1 overflow-hidden">
+          <div className="flex-1 rounded-xl overflow-hidden border border-border">
+            <AvatarCall
+              avatarId="director"
+              credentials={{ serverUrl: sessionData.server_url, token: sessionData.token, roomName: sessionData.room_name, sessionId: sessionData.session_id }}
+              onEnd={end}
+              onError={(e) => { setError(e.message); setSessionData(null) }}
+            />
           </div>
-          <button onClick={() => setCredentials(null)} className="btn-secondary w-full py-2">End session</button>
+          <button onClick={end} className="btn-secondary w-full py-2">■ End session</button>
         </div>
       )}
     </div>

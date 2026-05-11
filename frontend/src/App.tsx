@@ -21,15 +21,22 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function RedirectIfAuthed({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return <Loader />
+  if (user) return <Navigate to="/home" replace />
+  return <>{children}</>
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Suspense fallback={<Loader />}>
           <Routes>
-            <Route path="/"          element={<LandingPage />} />
-            <Route path="/login"     element={<LoginPage />} />
-            <Route path="/register"  element={<RegisterPage />} />
+            <Route path="/"          element={<RedirectIfAuthed><LandingPage /></RedirectIfAuthed>} />
+            <Route path="/login"     element={<RedirectIfAuthed><LoginPage /></RedirectIfAuthed>} />
+            <Route path="/register"  element={<RedirectIfAuthed><RegisterPage /></RedirectIfAuthed>} />
             <Route path="/home"      element={<RequireAuth><HomePage /></RequireAuth>} />
             <Route path="/project/:id" element={<RequireAuth><ProjectPage /></RequireAuth>} />
             <Route path="*"          element={<Navigate to="/" replace />} />
